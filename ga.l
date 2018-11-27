@@ -13,8 +13,13 @@
 )
 
 ; generate a list of finches 
-(defun finch-list (i)
-  (cons (finches) (finch-list (- i 1) ) )
+(defun finch-list ((i integer))
+  (cond
+   ( (= 0 i) nil)
+   (t
+    (cons (finches) (finch-list (- i 1) ) )
+   )
+  )
 )
 
 ; string representation of number of random finches
@@ -23,6 +28,22 @@
 )
 
 ;************************* String Mutation **************************************:
+
+; selects a random item from the list
+(defun pick (lst)
+  (select (random (length lst) ) lst)
+)
+
+; returns the element of the list in a given position
+(defun select (i lst)
+  (cond
+   ( (null lst) nil)
+   ( (equal i 0) (car lst) )
+   (t
+    (select (- i 1) (cdr lst) )
+    )
+   )
+  )
 
 ; mutate the string
 (defmethod mutation ( (finch-string list) &aux p q)
@@ -94,19 +115,43 @@
   )
 )
 
+(defmethod display ((i individual))
+  (display-nnl i)(terpri)
+)
+
+(defmethod display-nnl ((i individual))
+  (prin1 (individual-number i))
+  (princ (filler (individual-number i)))
+  (prin1 (individual-finch-string i))
+  (princ "    ")
+  (prin1 (individual-fitness i))
+  (princ (filler (individual-fitness i)))
+)
+
+(defmethod filler ((i integer))
+  (cond
+   ((< i 10) "       ")
+   ((< i 100) "      ")
+   ((< i 1000) "     ")
+   ((< i 10000) "    ")
+   ((< i 100000) "   ")
+  )
+)
+
+
 (defmethod fitness-long ((i individual))
-  (fitness-long (individual-finch-string) )
+  (fitness-long (individual-finch-string i) )
 )
 
 
 (defmethod fitness-short ((i individual))
-  (fitness-short (individual-finch-string) )
+  (fitness-short (individual-finch-string i) )
 )
 
 
 ;************************ The Population ********************************:
 
-(defconstant *population-size* 100)
+(defconstant *population-size* 50)
 (defconstant *selection-size* 8)
 
 (defclass population ()
@@ -137,7 +182,7 @@
 (defmethod individual-population (&aux individuals)
   (setf individuals () )
   (dotimes (i *population-size*)
-    (push (new-individual (+ i 1) (rbg-string) ) individuals )
+    (push (new-individual (+ i 1) (finch-string) ) individuals )
   )
   (make-instance 'population :individuals (reverse individuals) )
 )
@@ -170,6 +215,7 @@
 
 (defmethod most-fit-individual ((l list) &aux max-value max-individual)
   (setf max-individual () )
+  (setf max-value 0)
   (dolist (i l)
     (if (> (funcall *fitness* i) max-value)
 	(let ()
@@ -179,6 +225,18 @@
       )
     )
   max-individual
+)
+
+(defmethod display ((p population))
+  (terpri)(terpri)
+  (princ "Generation ")
+  (prin1 (population-generation p))
+  (princ " population ...")
+  (terpri)(terpri)
+  (dolist (i (population-individuals p))
+    (display i)
+  )
+  (terpri)
 )
 
 (defmethod select-demo-helper ((l list) (i individual) )
@@ -198,7 +256,7 @@
   (setf mutation (mutation (individual-finch-string i) ) )
   (make-instance 'individual
 		 :number (individual-number i)
-		 :rbg-string mutation
+		 :finch-string mutation
 		 :fitness (funcall *fitness* mutation)
   )
 )
@@ -326,6 +384,7 @@
   )
   (terpri)
   (summarize p)
+  (terpri)
   (format t "THE ISLAND SELECTS FOR SHORT BEAKS:~%~%")
   (setf *fitness* #'fitness-short)
   (dotimes (i *nr-generations*)
