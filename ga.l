@@ -9,7 +9,8 @@
 
 ; randomly generate a length of finch beak
 (defun finches ()
-  (nth (random 2) '(long short) )
+  (nth (random 8) '(1 2 3 4 5 6 7 8) )
+  ;(+ 1 (random 10) )
 )
 
 ; generate a list of finches 
@@ -42,13 +43,14 @@
    (t
     (select (- i 1) (cdr lst) )
     )
-   )
   )
+)
 
 ; mutate the string
 (defmethod mutation ( (finch-string list) &aux p q)
   (setf p (random (length finch-string) ) )
-  (setf q (others '(long short) (nth p finch-string) ) )
+  ;(setf q (others (finch-string) (nth p finch-string) ) )
+  (setf q (others '(1 2 3 4 5 6 7 8) (nth p finch-string) ) )
   (change finch-string (pick q) p )
 )
 
@@ -80,11 +82,13 @@
 ;************************ Define Fitness Metrics ********************************:
 
 (defmethod fitness-long ((lst list))
-  (count 'long lst)
+  ;(count 'long lst)
+  (count-if (lambda (element) (> element 4) ) lst )
 )
 
 (defmethod fitness-short ((lst list))
-  (count 'short lst)
+  ;(count 'short lst)
+  (count-if (lambda (element) (<= element 4) ) lst )
 )
 
 
@@ -289,9 +293,7 @@
 
 (defmethod perform-one-copy ((cp population) (np population) &aux x m mm new-i)
   (setf m (select-individual cp) )
-  (if *copy-demo* (format t "Selected individual = ~%"))
-  (if *copy-demo* (display m) )
-  (setf mm(maybe-mutate m) )
+  (setf mm (maybe-mutate m) )
   (if *copy-demo* (format t "Possibly mutated individual = ~&"))
   (if *copy-demo* (display mm) )
   (setf (individual-number mm) (+ 1 (size np) )  )
@@ -373,7 +375,7 @@
 
 ; The GA
 (defmethod ga-text-demo (&aux p)
-  (format t "THE ISLAND SELECTS FOR LONG BEAKS:~%~%")
+  (format t "THE ISLAND SELECTS FOR LONG BEAKS (Length = 5-8cm):~%~%")
   (setf *fitness* #'fitness-long)
   (setf p (initial-population) )
   (terpri)
@@ -384,8 +386,7 @@
   )
   (terpri)
   (summarize p)
-  (terpri)
-  (format t "THE ISLAND SELECTS FOR SHORT BEAKS:~%~%")
+  (format t "THE ISLAND SELECTS FOR SHORT BEAKS (Length = 1-4cm):~%~%")
   (setf *fitness* #'fitness-short)
   (dotimes (i *nr-generations*)
     (setf p (next-generation p) )
