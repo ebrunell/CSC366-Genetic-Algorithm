@@ -5,12 +5,11 @@
 ;************************** Initial Statements ***********************************:
 
 ; number of finches 
-(setf *finches* 20)
+(setf *finches* 15)
 
 ; randomly generate a length of finch beak
 (defun finches ()
   (nth (random 8) '(1 2 3 4 5 6 7 8) )
-  ;(+ 1 (random 10) )
 )
 
 ; generate a list of finches 
@@ -49,7 +48,6 @@
 ; mutate the string
 (defmethod mutation ( (finch-string list) &aux p q)
   (setf p (random (length finch-string) ) )
-  ;(setf q (others (finch-string) (nth p finch-string) ) )
   (setf q (others '(1 2 3 4 5 6 7 8) (nth p finch-string) ) )
   (change finch-string (pick q) p )
 )
@@ -82,12 +80,10 @@
 ;************************ Define Fitness Metrics ********************************:
 
 (defmethod fitness-long ((lst list))
-  ;(count 'long lst)
   (count-if (lambda (element) (> element 4) ) lst )
 )
 
 (defmethod fitness-short ((lst list))
-  ;(count 'short lst)
   (count-if (lambda (element) (<= element 4) ) lst )
 )
 
@@ -124,10 +120,12 @@
 )
 
 (defmethod display-nnl ((i individual))
+  (princ "Group #")
   (prin1 (individual-number i))
   (princ (filler (individual-number i)))
   (prin1 (individual-finch-string i))
   (princ "    ")
+  (princ "Fitness: ")
   (prin1 (individual-fitness i))
   (princ (filler (individual-fitness i)))
 )
@@ -155,7 +153,7 @@
 
 ;************************ The Population ********************************:
 
-(defconstant *population-size* 50)
+(defconstant *population-size* 10)
 (defconstant *selection-size* 8)
 
 (defclass population ()
@@ -232,7 +230,6 @@
 )
 
 (defmethod display ((p population))
-  (terpri)(terpri)
   (princ "Generation ")
   (prin1 (population-generation p))
   (princ " population ...")
@@ -279,6 +276,7 @@
 
 (setf *copy-demo* nil)
 
+; percent copied
 (defconstant *pc-c* 40)
 
 (defmethod perform-copies ((cp population) (np population))
@@ -318,6 +316,7 @@
 
 (setf *crossover-demo* nil)
 
+; percent crossover
 (defconstant *pc-x* 60)
 
 (defmethod perform-crossovers ((cp population) (np population))
@@ -375,7 +374,34 @@
 
 ; The GA
 (defmethod ga-text-demo (&aux p)
+    (terpri)
+    (write-line "        / \\ . _           ")
+    (write-line "        \\` \\ / '-.      ")
+    (write-line "      < ``-.(),--'`      ")
+    (write-line "       '--.()()`--.      ")
+    (write-line "        / |/-/`'._\\      ")
+    (write-line "           |=|           ")
+    (write-line "           |_|           ")
+    (write-line "      ~`   |-| ~~      ~ ")
+    (write-line "  ~~  ~~ __|=|__   ~~    ")
+    (write-line "~~   .-'`  |_|  ````-._   ~~ ")
+    (write-line " ~~.'      |=|         '-.  ~ ")
+    (write-line "  |      `'`'`            \   ~ ")
+    (write-line "~   \      FINCH ISLAND    | ~~ ")
+    (write-line "  ~~  '-.__.--._         .-'    ")
+    (write-line "    ~~      ~~   '--...-'`    ~~  ")
+    (write-line "  ~~    ~~     ~   ~~       ~ ")
+    (write-line "     ~~     ~    ~~     ~   ")
+
+
+  (terpri) (terpri)
   (format t "THE ISLAND SELECTS FOR LONG BEAKS (Length = 5-8cm):~%~%")
+  (write-line "     \\\\ " )
+  (write-line "      (o=====> ")
+  (write-line "  \\\\_//) ")
+  (write-line "   \\_/_) ")
+  (write-line "    _|_   ")
+  (terpri)
   (setf *fitness* #'fitness-long)
   (setf p (initial-population) )
   (terpri)
@@ -386,7 +412,14 @@
   )
   (terpri)
   (summarize p)
+  (terpri)
   (format t "THE ISLAND SELECTS FOR SHORT BEAKS (Length = 1-4cm):~%~%")
+  (write-line "     \\\\ " )
+  (write-line "      (o> ")
+  (write-line "  \\\\_//) ")
+  (write-line "   \\_/_) ")
+  (write-line "    _|_   ")
+  (terpri)
   (setf *fitness* #'fitness-short)
   (dotimes (i *nr-generations*)
     (setf p (next-generation p) )
@@ -403,6 +436,6 @@
 )
 
 (defmethod check-average ((p population))
-  (format t "average fitness of population ~A = ~A~%" 
+  (format t "avg fitness of finch population ~A = ~A~%" 
 			(population-generation p) (average p) )
 )
